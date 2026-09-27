@@ -3,8 +3,10 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 export function request(path: string, init?: RequestInit): Promise<Response> {
   const url = path.startsWith('http') ? path : `${API_BASE}${path}`
+  // 文件上传走 FormData 时不能写死 JSON 头，浏览器会自动带上 multipart 边界
+  const isFormData = init?.body instanceof FormData
   return fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
     ...init,
   }).catch((error: unknown) => {
     const detail = error instanceof Error ? error.message : '请求未送达'
