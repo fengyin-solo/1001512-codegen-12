@@ -74,3 +74,19 @@ npm run dev
   `backend/app/routers/<模块>.py`，业务规则在 `backend/app/services/<模块>.py`。
 - 列表接口统一返回 `{ items, total, page, size }`，动作接口统一返回 `{ ok, message }`。
 - 状态流转只允许在 `app/services` 里改，路由层不做业务判断。
+
+## 观测记录成批导入
+
+观测记录页支持上传 CSV 文件成批导入（`POST /api/observation/import`）：
+
+- 文件表头固定为 `记录编号,所属站点,观测要素,观测时刻,观测数值,数值单位`，模板可从
+  `GET /api/observation/template` 下载；记录编号留空时按 `OBSE-序号` 自动补号。
+- 逐行校验、逐行落库：观测数值不是数字、观测时刻不是合法日期时间、缺必填字段的行
+  单独标为失败并说明原因，单行失败不回滚整批。
+- 同一站点、同一观测要素、同一观测时刻的重复记录（文件内或库内已存在）只保留一条，
+  重复行在结果里标注跳过。
+- 返回按站点分组的成功/失败/重复计数与每一行的结果；导入后页面按当前筛选条件刷新，
+  列表条数与统计卡片同口径（`GET /api/observation/stats`）。
+- `GET /api/observation/export` 按当前条件导出 CSV（UTF-8 BOM，Excel 可直接打开），
+  列里带记录编号与数值单位，条数与列表一致。
+- 后端回归测试：`cd backend && .venv/bin/python -m unittest discover -s tests`。

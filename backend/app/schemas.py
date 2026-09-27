@@ -28,6 +28,13 @@ class EntryPayload(BaseModel):
     remark: str | None = None
 
 
+class ImportPayload(BaseModel):
+    """成批导入时提交的记录文件文本内容（前端读取 CSV/文本文件后原样传入）。"""
+
+    content: str = ""
+    filename: str | None = None
+
+
 
 class StationEntry(BaseModel):
     """观测站点明细结构。"""
